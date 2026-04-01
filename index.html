@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TWL NZX Announcements</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    color: #1a202c;
+    background: transparent;
+    padding: 0;
+  }
+  #twl-widget-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+  }
+  #twl-widget-controls label { font-size: 0.85em; font-weight: 500; opacity: 0.7; white-space: nowrap; }
+  #twl-year-select {
+    padding: 5px 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 5px;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+    font-size: 0.85em;
+    font-family: inherit;
+  }
+  #twl-search {
+    padding: 5px 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 5px;
+    background: #fff;
+    outline: none;
+    font-size: 0.85em;
+    font-family: inherit;
+    flex: 1;
+    min-width: 160px;
+  }
+  #twl-search:focus, #twl-year-select:focus { border-color: #5357EE; outline: none; }
+  #twl-count-badge { margin-left: auto; font-size: 0.8em; opacity: 0.5; white-space: nowrap; }
+  #twl-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #twl-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+  #twl-table thead tr { border-bottom: 2px solid #e2e8f0; background: #f7fafc; }
+  #twl-table thead th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #718096;
+    white-space: nowrap;
+  }
+  #twl-table tbody tr { border-bottom: 1px solid #f0f4f8; transition: background 0.1s; }
+  #twl-table tbody tr:hover { background: #f7fafc; }
+  #twl-table tbody tr:last-child { border-bottom: none; }
+  #twl-table td { padding: 10px 16px; vertical-align: middle; line-height: 1.4; }
+  #twl-table td.twl-td-date { white-space: nowrap; font-size: 0.85em; color: #718096; width: 110px; }
+  #twl-table td.twl-td-title a { text-decoration: none; font-weight: 500; color: #5357EE; }
+  #twl-table td.twl-td-title a:hover { text-decoration: underline; }
+  #twl-table td.twl-td-type { white-space: nowrap; width: 110px; }
+  .twl-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.06);
+    color: #4a5568;
+  }
+  .twl-no-results { padding: 24px 16px; text-align: center; color: #a0aec0; font-size: 0.9em; }
+  #twl-widget-footer {
+    padding: 10px 0;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.78em;
+    color: #a0aec0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #twl-widget-footer a { color: #5357EE; text-decoration: none; }
+  #twl-widget-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div id="twl-widget-controls">
+  <label for="twl-year-select">Year:</label>
+  <select id="twl-year-select">
+    <option value="all">All years</option>
+    <option value="2026" selected>2026</option>
+    <option value="2025">2025</option>
+    <option value="2024">2024</option>
+    <option value="2023">2023</option>
+    <option value="2022">2022</option>
+    <option value="2021">2021</option>
+  </select>
+  <input id="twl-search" type="text" placeholder="Search announcements..." autocomplete="off">
+  <span id="twl-count-badge"></span>
+</div>
+
+<div id="twl-table-wrap">
+  <table id="twl-table">
+    <thead><tr><th>Date</th><th>Title</th><th>Type</th></tr></thead>
+    <tbody id="twl-tbody"></tbody>
+  </table>
+</div>
+
+<div id="twl-widget-footer">
+  <span>Source: <a href="https://www.nzx.com/companies/TWL/announcements" target="_blank" rel="noopener">nzx.com/companies/TWL</a></span>
+  <span>Data sourced from NZX — verify critical items directly</span>
+</div>
+
+<script>
+(function() {
+  var DATA = {
+    "2026": [
+      { date: "19/02/2026", title: "Capital Change Notice - Issue of Shares", url: "https://www.nzx.com/announcements/467833", type: "SECISSUE" },
+      { date: "17/02/2026", title: "Share Purchase Plan Results", url: "https://www.nzx.com/announcements/467545", type: "OFFER" },
+      { date: "13/02/2026", title: "D&O Disclosure", url: "https://www.nzx.com/announcements/467377", type: "SHINTR" },
+      { date: "03/02/2026", title: "TradeWindow - ASX Appendix 3B Proposed Issue of Securities", url: "https://www.nzx.com/announcements/466869", type: "GENERAL" },
+      { date: "02/02/2026", title: "Share Purchase Plan Announcement", url: "https://www.nzx.com/announcements/466784", type: "OFFER" },
+      { date: "30/01/2026", title: "TradeWindow Investor Update - Quarter 3 FY26", url: "https://www.nzx.com/announcements/466711", type: "MKTUPDTE" },
+      { date: "20/01/2026", title: "D&O Disclosure", url: "https://www.nzx.com/announcements/466189", type: "SHINTR" },
+      { date: "13/01/2026", title: "D&O Disclosure", url: "https://www.nzx.com/announcements/465788", type: "SHINTR" },
+      { date: "05/01/2026", title: "SPH Notice", url: "https://www.nzx.com/announcements/465391", type: "SHINTR" },
+      { date: "05/01/2026", title: "D&O Disclosure", url: "https://www.nzx.com/announcements/465390", type: "SHINTR" },
+      { date: "05/01/2026", title: "D&O Disclosure", url: "https://www.nzx.com/announcements/465389", type: "SHINTR" }
+    ],
+    "2025": [
+      { date: "19/12/2025", title: "TradeWindow Lists on the ASX", url: "https://www.nzx.com/announcements/464903", type: "GENERAL" },
+      { date: "10/12/2025", title: "Special Shareholders Meeting Results", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "28/11/2025", title: "TWL - FY26 Half-year Results Announcement", url: "https://www.nzx.com/announcements/463559", type: "HALFYR" },
+      { date: "25/11/2025", title: "TWL - Trading to Resume at Market Open", url: "https://www.nzx.com/announcements/463312", type: "HALT" },
+      { date: "21/11/2025", title: "TradeWindow Launches A$5m Capital Raising", url: "https://www.nzx.com/announcements/463125", type: "OFFER" },
+      { date: "21/11/2025", title: "TWL - Trading Halt of Securities", url: "https://www.nzx.com/announcements/463127", type: "HALT" },
+      { date: "21/11/2025", title: "TWL - Waiver from NZX Listing Rule 4.19.1", url: "https://www.nzx.com/announcements/463131", type: "WAV" },
+      { date: "17/11/2025", title: "TradeWindow Investor Update - Quarter 2 FY26", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "23/09/2025", title: "TradeWindow Completes $1 Million Placement", url: "https://www.nzx.com/announcements/459339", type: "SECISSUE" },
+      { date: "15/09/2025", title: "TradeWindow Pursues ASX Foreign Exempt Listing", url: "https://www.nzx.com/announcements/458717", type: "MKTUPDTE" },
+      { date: "22/08/2025", title: "TWL Annual General Shareholders Meeting 2025 Results", url: "https://www.nzx.com/announcements/457350", type: "MEETING" },
+      { date: "22/08/2025", title: "TradeWindow Affirms Guidance; Provides Product Road Map", url: "https://www.nzx.com/announcements/457282", type: "MKTUPDTE" },
+      { date: "29/05/2025", title: "TradeWindow FY25 Full Year Results Announcement", url: "https://www.nzx.com/companies/TWL/announcements", type: "FLLYR" },
+      { date: "15/05/2025", title: "TradeWindow Provides Revenue Guidance for FY26", url: "https://www.nzx.com/announcements/451634", type: "MKTUPDTE" },
+      { date: "19/06/2025", title: "TradeWindow Raises $600k in Placement to Accelerate Growth", url: "https://www.nzx.com/announcements/453712", type: "OFFER" },
+      { date: "29/01/2025", title: "TradeWindow Investor Update - Quarter 3 FY25", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" }
+    ],
+    "2024": [
+      { date: "28/11/2024", title: "TWL - FY25 Half-year Results Announcement", url: "https://www.nzx.com/announcements/442757", type: "HALFYR" },
+      { date: "01/08/2024", title: "TradeWindow Gains 26 More Customers with IFCBAA Partnership", url: "https://www.nzx.com/announcements/435397", type: "MKTUPDTE" },
+      { date: "30/05/2024", title: "TradeWindow FY 2024 Financial Results Announcement", url: "https://www.nzx.com/announcements/431812", type: "FLLYR" },
+      { date: "23/04/2024", title: "Share Purchase Plan Results", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "10/04/2024", title: "TradeWindow Delivers Strong Revenue Growth for Full Year", url: "https://www.nzx.com/announcements/429310", type: "MKTUPDTE" },
+      { date: "08/04/2024", title: "TradeWindow Announces Opening of Share Purchase Plan", url: "https://www.nzx.com/announcements/429160", type: "OFFER" },
+      { date: "26/03/2024", title: "TradeWindow Announces $2.2m Capital Raising", url: "https://www.nzx.com/announcements/428552", type: "OFFER" },
+      { date: "09/01/2024", title: "TradeWindow Changes External Auditor", url: "https://www.nzx.com/announcements/424496", type: "AUDITORS" }
+    ],
+    "2023": [
+      { date: "21/12/2023", title: "TWL and nChain agree to cancel agreement with settlement", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "19/12/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "04/12/2023", title: "SPH Notice - ASB Bank Limited", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "30/11/2023", title: "Capital Change Notice - Issue of Shares", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "29/11/2023", title: "Capital Change Notices - Issue of Options and Shares", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "29/11/2023", title: "TWL - FY24 Half-Year Results Announcement", url: "https://www.nzx.com/companies/TWL/announcements", type: "HALFYR" },
+      { date: "16/11/2023", title: "TradeWindow Capital Raising Update", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "10/11/2023", title: "Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "10/11/2023", title: "TradeWindow Lender Waives Covenant", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "06/11/2023", title: "Capital Change Notice - Issue of Options and Shares", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "02/11/2023", title: "TradeWindow Trading Update and Reorganisation", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "01/11/2023", title: "TradeWindow Director Resignation", url: "https://www.nzx.com/companies/TWL/announcements", type: "ADMIN" },
+      { date: "26/10/2023", title: "TradeWindow Investor Update Q2 - FY24", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "02/10/2023", title: "nChain Transaction Update", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "29/09/2023", title: "Capital Change Notice - Options and Shares", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "29/09/2023", title: "SPH Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "20/09/2023", title: "Capital Change Notice - Issue of Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "04/09/2023", title: "Capital Change Notice - Issue of Shares", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "04/09/2023", title: "Capital Change Notice - Issue of Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "31/08/2023", title: "2023 Annual Shareholder Meeting Results", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "31/08/2023", title: "2023 Annual Shareholder Meeting Presentation and Speeches", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "22/08/2023", title: "TradeWindow Investor Update Q1 - FY24", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "09/08/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "08/08/2023", title: "TWL - Notice of Annual General Meeting", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "02/08/2023", title: "SPH Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "02/08/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "02/08/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "02/08/2023", title: "Annual Shareholders Meeting", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "31/07/2023", title: "Capital Change Notice - Conversion of Options to Shares", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "31/07/2023", title: "Capital Change Notice - Issue of Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "28/07/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "25/07/2023", title: "TradeWindow and nChain Conclude Strategic Agreement", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "30/06/2023", title: "TradeWindow - 2023 Annual Report", url: "https://www.nzx.com/companies/TWL/announcements", type: "ANNREP" },
+      { date: "29/06/2023", title: "Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "27/06/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "26/06/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "14/06/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "12/06/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "06/06/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "02/06/2023", title: "D&O Disclosure - AJ Smith", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "02/06/2023", title: "Issue of Ordinary Shares pursuant to Conversion of Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "02/06/2023", title: "Issue of Employee Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "30/05/2023", title: "Investor Presentation Update", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "30/05/2023", title: "FY23 Results Announcement - 30 May 2023", url: "https://www.nzx.com/companies/TWL/announcements", type: "FLLYR" },
+      { date: "26/05/2023", title: "TWL Partnership with the Export Council of Australia", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "02/05/2023", title: "Capital Change Notice - Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "11/04/2023", title: "Buy New Zealand Made Signs on with TradeWindow Assure+", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "05/04/2023", title: "Completion of Employee Consultation and Financial Projections", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "31/03/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "31/03/2023", title: "TradeWindow Announces Heads of Agreement with nChain", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "15/03/2023", title: "SPH Notice - Quayside Holdings Ltd, Quayside Securities Ltd", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "15/03/2023", title: "TradeWindow Announces Cost Reductions", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "13/03/2023", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "09/03/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "06/03/2023", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "02/03/2023", title: "Issue of New Shares Following Completion of Share Offer", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "27/02/2023", title: "TradeWindow Announces Capital Raising Results", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "14/02/2023", title: "Waiver from Listing Rule 3.16.2", url: "https://www.nzx.com/companies/TWL/announcements", type: "WAV" },
+      { date: "14/02/2023", title: "TradeWindow Announces Extension of Share Offer", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "01/02/2023", title: "Results of the Special Meeting of Shareholders", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "31/01/2023", title: "Special Shareholder Meeting Presentation", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "24/01/2023", title: "DFAT Approves TradeWindow to Issue Certificates of Origin", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "23/01/2023", title: "Silver Fern Farms Embraces TradeWindow Trade Solution", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "17/01/2023", title: "TradeWindow Announces Capital Raising of up to NZ$20m", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "13/01/2023", title: "Trading Update", url: "https://www.nzx.com/companies/TWL/announcements", type: "MKTUPDTE" },
+      { date: "11/01/2023", title: "TradeWindow Receives JAS-ANZ Accreditation", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" }
+    ],
+    "2022": [
+      { date: "28/12/2022", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "19/12/2022", title: "D&O Disclosure", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "09/12/2022", title: "TWL - Interim Report FY23", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "06/12/2022", title: "Alliance Signs on to TradeWindow Digital Trade Solutions", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "24/11/2022", title: "D&O Disclosure Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "17/11/2022", title: "TWL - 30 September 2022 Half Year Results Announcement", url: "https://www.nzx.com/companies/TWL/announcements", type: "HALFYR" },
+      { date: "14/11/2022", title: "TradeWindow and EMA Partner-up to Build Export Capability", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "08/11/2022", title: "TradeWindow Enters Trial Agreement with GSBN", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "28/10/2022", title: "TradeWindow Secures U.S. Footprint with FoodChain ID", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "11/10/2022", title: "D&O Disclosure Notices", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "23/09/2022", title: "D&O Disclosure Notices", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "15/09/2022", title: "Correction of Error - Options to Independent Directors", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "15/09/2022", title: "TradeWindow Issues Share Options to Independent Directors", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "15/09/2022", title: "Results of the 2022 Annual Meeting of Shareholders", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "14/09/2022", title: "ASM Presentation and Addresses", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "12/09/2022", title: "TradeWindow Issues Employee Share Options", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "29/08/2022", title: "Waivers from Listing Rules 4.2.2 and 7.8.5", url: "https://www.nzx.com/companies/TWL/announcements", type: "WAV" },
+      { date: "29/08/2022", title: "TradeWindow Continues Growth in SEA via Indonesia Agency", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "29/08/2022", title: "Notice of Annual General Meeting", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "26/08/2022", title: "SPH Notice - Movement of Substantial Holding", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "09/08/2022", title: "Resignation of Chief Operating Officer", url: "https://www.nzx.com/companies/TWL/announcements", type: "ADMIN" },
+      { date: "08/08/2022", title: "Annual Shareholders Meeting and Nomination of Directors", url: "https://www.nzx.com/companies/TWL/announcements", type: "MEETING" },
+      { date: "29/07/2022", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "28/07/2022", title: "TradeWindow Share Purchase Plan Closes Fully Subscribed", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "27/07/2022", title: "TradeWindow Pushes into Thailand with New Agency Agreement", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "26/07/2022", title: "SPH Notice - Andrew John Balgarnie", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "21/07/2022", title: "SPH Notice - Quayside Holdings Limited", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "20/07/2022", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "15/07/2022", title: "TradeWindow Agreement to Acquire Rfider Goes Unconditional", url: "https://www.nzx.com/companies/TWL/announcements", type: "TRANSACT" },
+      { date: "14/07/2022", title: "Trade Window Holdings Limited - Trading Halt Lifted", url: "https://www.nzx.com/companies/TWL/announcements", type: "HALT" },
+      { date: "14/07/2022", title: "$9m Placement Completion and Opening of Share Purchase Plan", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "12/07/2022", title: "Trade Window Holdings Limited - Trading Halt", url: "https://www.nzx.com/companies/TWL/announcements", type: "HALT" },
+      { date: "12/07/2022", title: "TradeWindow Announces Capital Raising of up to $10m", url: "https://www.nzx.com/companies/TWL/announcements", type: "OFFER" },
+      { date: "14/06/2022", title: "TradeWindow - 2022 Annual Report", url: "https://www.nzx.com/companies/TWL/announcements", type: "ANNREP" },
+      { date: "13/06/2022", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "10/06/2022", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "01/06/2022", title: "TradeWindow Expands its Reach in Southeast Asia", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "30/05/2022", title: "FY22 Results Announcement - 30 May 2022", url: "https://www.nzx.com/companies/TWL/announcements", type: "FLLYR" },
+      { date: "19/05/2022", title: "FY22 Results Announcement Date Confirmed", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "17/05/2022", title: "TradeWindow Acquires Rfider", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "19/04/2022", title: "TWL Reshapes Leadership Team for Growth", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "13/04/2022", title: "TradeWindow Partners with PortConnect", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "31/03/2022", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "08/03/2022", title: "TWL and Vero Marine to Offer First Paperless Insurance", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "16/02/2022", title: "TradeWindow to Issue Certificates of Origin under RCEP", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "21/01/2022", title: "TradeWindow and Mastercard Teams Up", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" }
+    ],
+    "2021": [
+      { date: "14/12/2021", title: "NZIER Study for TradeWindow", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "23/11/2021", title: "D&O Disclosure Notice - Deidre Campbell", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "SPH Notice - Trade Window Holdings Limited", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "D&O Disclosure Notice - Andrew John Balgarnie", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "SPH Notice - Holding des Mers du Sud HDMDS", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "D&O Disclosure Notice - Brendan Sean McEnroe", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "D&O Initial Disclosure - Kerry Michael Friend", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "SPH Notice - Albertus Johannes Smith", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "SPH Notice - Quayside Holdings Limited", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "TWL - Capital Change Notice", url: "https://www.nzx.com/companies/TWL/announcements", type: "SECISSUE" },
+      { date: "22/11/2021", title: "L and Q Notice - Trade Window Holdings Limited", url: "https://www.nzx.com/announcements/382873", type: "OFFER" },
+      { date: "22/11/2021", title: "SPH Notice - ASB Bank Limited", url: "https://www.nzx.com/companies/TWL/announcements", type: "SHINTR" },
+      { date: "22/11/2021", title: "NZX Listing Profile - TWL", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "22/11/2021", title: "Investor Presentation", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" },
+      { date: "22/11/2021", title: "TradeWindow Lists on NZX Today with Stock Ticker TWL", url: "https://www.nzx.com/companies/TWL/announcements", type: "GENERAL" }
+    ]
+  };
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getRows(year) {
+    if (year === 'all') {
+      return Object.keys(DATA).sort(function(a,b){return b-a;}).reduce(function(acc,y){return acc.concat(DATA[y]);}, []);
+    }
+    return DATA[year] || [];
+  }
+
+  function render() {
+    var year = document.getElementById('twl-year-select').value;
+    var q = document.getElementById('twl-search').value.trim().toLowerCase();
+    var rows = getRows(year);
+    if (q) {
+      rows = rows.filter(function(r) {
+        return r.title.toLowerCase().indexOf(q) !== -1 ||
+               r.date.indexOf(q) !== -1 ||
+               r.type.toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    var tbody = document.getElementById('twl-tbody');
+    var badge = document.getElementById('twl-count-badge');
+    tbody.innerHTML = '';
+    if (rows.length === 0) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="3" class="twl-no-results">No announcements found</td>';
+      tbody.appendChild(tr);
+      badge.textContent = '0 results';
+    } else {
+      rows.forEach(function(r) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="twl-td-date">' + esc(r.date) + '</td>' +
+          '<td class="twl-td-title"><a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.title) + '</a></td>' +
+          '<td class="twl-td-type"><span class="twl-type-badge">' + esc(r.type) + '</span></td>';
+        tbody.appendChild(tr);
+      });
+      badge.textContent = rows.length + ' announcement' + (rows.length !== 1 ? 's' : '');
+    }
+  }
+
+  document.getElementById('twl-year-select').addEventListener('change', render);
+  document.getElementById('twl-search').addEventListener('input', render);
+  render();
+})();
+</script>
+</body>
+</html>
